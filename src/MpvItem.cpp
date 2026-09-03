@@ -84,6 +84,9 @@ MpvItem::MpvItem(QQuickItem *parent) : QQuickFramebufferObject(parent)
     // Keep rendering inside Qt Quick and avoid Vulkan/MoltenVK on older Intel Macs.
     mpv_set_option_string(m_mpv, "vo", "libmpv");
     mpv_set_option_string(m_mpv, "gpu-api", "opengl");
+    // Allow mpv's built-in ytdl hook to resolve supported web media URLs.
+    // yt-dlp remains an optional external dependency; ArnPlay does not download files.
+    mpv_set_option_string(m_mpv, "ytdl", "yes");
     mpv_set_option_string(m_mpv, "volume-max", "200");
     mpv_set_option_string(m_mpv, "keep-open", "yes");
     mpv_set_option_string(m_mpv, "hwdec", "auto-safe");

@@ -39,6 +39,18 @@ ApplicationWindow {
             playIndex(playlistModel.count - 1)
     }
 
+    function openOnlineUrl() {
+        let value = onlineUrlField.text.trim()
+        if (!/^https?:\/\//i.test(value)) {
+            onlineUrlError.text = "Cole um endereço iniciado por https://"
+            return
+        }
+        onlineUrlError.text = ""
+        addMedia(value, true)
+        onlineUrlDialog.close()
+        onlineUrlField.clear()
+    }
+
     function playIndex(index) {
         if (index < 0 || index >= playlistModel.count) return
         currentMediaIndex = index
@@ -87,6 +99,54 @@ ApplicationWindow {
         }
     }
 
+    Dialog {
+        id: onlineUrlDialog
+        title: "Abrir mídia on-line"
+        modal: true
+        anchors.centerIn: parent
+        width: Math.min(560, window.width - 40)
+        standardButtons: Dialog.NoButton
+        onOpened: {
+            onlineUrlError.text = ""
+            onlineUrlField.forceActiveFocus()
+        }
+
+        contentItem: ColumnLayout {
+            spacing: 12
+            Label {
+                Layout.fillWidth: true
+                text: "Cole um link do YouTube, Rumble ou outra fonte compatível."
+                color: window.textPrimary
+                wrapMode: Text.WordWrap
+            }
+            TextField {
+                id: onlineUrlField
+                Layout.fillWidth: true
+                placeholderText: "https://www.youtube.com/watch?v=..."
+                selectByMouse: true
+                onAccepted: window.openOnlineUrl()
+            }
+            Label {
+                id: onlineUrlError
+                Layout.fillWidth: true
+                color: "#e57373"
+                wrapMode: Text.WordWrap
+            }
+            Label {
+                Layout.fillWidth: true
+                text: "A reprodução depende do yt-dlp. Esta função não baixa nem salva o vídeo."
+                color: window.textMuted
+                font.pixelSize: 12
+                wrapMode: Text.WordWrap
+            }
+            RowLayout {
+                Layout.alignment: Qt.AlignRight
+                Button { text: "Cancelar"; onClicked: onlineUrlDialog.close() }
+                Button { text: "Reproduzir"; onClicked: window.openOnlineUrl() }
+            }
+        }
+    }
+
     FileDialog {
         id: subtitleDialog
         title: "Carregar legenda"
@@ -99,6 +159,7 @@ ApplicationWindow {
         Menu {
             title: "Arquivo"
             Action { text: "Abrir mídia…"; shortcut: StandardKey.Open; onTriggered: openDialog.open() }
+            Action { text: "Abrir URL…"; shortcut: "Ctrl+U"; onTriggered: onlineUrlDialog.open() }
             Action { text: "Carregar legenda…"; shortcut: "Ctrl+Shift+O"; onTriggered: subtitleDialog.open() }
             MenuSeparator {}
             Action { text: "Sair"; shortcut: StandardKey.Quit; onTriggered: Qt.quit() }
@@ -169,8 +230,13 @@ ApplicationWindow {
                     spacing: 18
                     visible: player.duration <= 0
                     Text { anchors.horizontalCenter: parent.horizontalCenter; text: "ARNPLAY"; color: window.textPrimary; font.bold: true; font.pixelSize: 42; font.letterSpacing: 7 }
-                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Arraste suas mídias ou abra um arquivo"; color: window.gold; font.pixelSize: 16 }
-                    Button { anchors.horizontalCenter: parent.horizontalCenter; text: "Abrir mídia"; onClicked: openDialog.open() }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Arraste suas mídias, abra um arquivo ou reproduza uma URL"; color: window.gold; font.pixelSize: 16 }
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: 10
+                        Button { text: "Abrir mídia"; onClicked: openDialog.open() }
+                        Button { text: "Abrir URL"; onClicked: onlineUrlDialog.open() }
+                    }
                 }
 
                 PlayerControls {

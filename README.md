@@ -1,4 +1,4 @@
-# ArnPlay — Studio Arn (0.3.4)
+# ArnPlay — Studio Arn (0.4.0)
 
 Player multimídia leve e moderno para macOS Intel, com interface Qt 6/QML e reprodução por libmpv. A identidade visual segue o padrão preto, branco e dourado do ArnFrame.
 
@@ -26,6 +26,7 @@ Copyright © 2026. Distribuído sob a licença **GNU GPLv3 ou posterior**.
 - Ícone Studio Arn gerado nativamente pelo macOS para o Dock e Finder
 - Barra desaparece 1 segundo após o mouse sair ou parar
 - Amplificação de volume até 200%, com indicação dourada acima de 100%
+- Reprodução de links on-line compatíveis, incluindo YouTube e Rumble, sem download
 
 ## Ambiente inicial
 
@@ -38,7 +39,7 @@ Copyright © 2026. Distribuído sob a licença **GNU GPLv3 ou posterior**.
 ## Dependências
 
 ```bash
-brew install qt cmake ninja mpv pkg-config
+brew install qt cmake ninja mpv yt-dlp pkg-config
 ```
 
 ## Compilar
@@ -58,6 +59,6 @@ Se o CMake não localizar a libmpv, confirme que `pkg-config --modversion mpv` r
 2. Criar a logo circular definitiva e o ícone `.icns`.
 3. Adicionar playlist, arrastar e soltar, seleção de áudio e legendas.
 4. Preparar empacotamento independente em `.app` e `.dmg`.
-5. Planejar integrações autorizadas com YouTube e Rumble, usando login seguro pelo navegador.
+5. Adicionar login seguro pelo navegador para recursos que realmente exijam autenticação.
 
 Downloads de conteúdo on-line serão habilitados somente quando autorizados pela plataforma e pelo titular.
