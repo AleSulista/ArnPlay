@@ -41,7 +41,16 @@ public:
     Q_INVOKABLE void cycleAudioTrack();
     Q_INVOKABLE void cycleSubtitleTrack();
     Q_INVOKABLE void setPlaybackSpeed(double speed);
-    Q_INVOKABLE void setVideoAdjustments(int brightness, int contrast, int saturation, int gamma, int rotation);
+    Q_INVOKABLE void setVideoBasic(double brightness, double contrast, double saturation,
+                                   double gamma, double hue, double sharpen,
+                                   bool deband, double grain);
+    Q_INVOKABLE void setVideoCrop(int left, int right, int top, int bottom);
+    Q_INVOKABLE void setVideoGeometry(int rotation, bool mirrorHorizontal,
+                                      bool mirrorVertical, double zoom);
+    Q_INVOKABLE void setVideoColor(bool grayscale, bool negative, double sepia,
+                                   int posterizeLevels);
+    Q_INVOKABLE void setVideoOther(bool deinterlace, double denoise,
+                                   bool removeBanding);
     Q_INVOKABLE void resetVideoAdjustments();
     Q_INVOKABLE void setAudioAdjustments(int bass, int treble, bool normalize, double delay);
     Q_INVOKABLE void resetAudioAdjustments();
@@ -67,6 +76,7 @@ private:
     static void renderUpdate(void *context);
     void setFlag(const char *name, bool value);
     void configureMusicVisualizer();
+    void applyVideoFilters();
 
     mpv_handle *m_mpv = nullptr;
     mpv_render_context *m_renderContext = nullptr;
@@ -80,4 +90,27 @@ private:
     bool m_musicVisualizer = true;
     bool m_currentMediaIsAudio = false;
     int m_visualizerBands = 64;
+    double m_brightness = 0.0;
+    double m_contrast = 0.0;
+    double m_saturation = 0.0;
+    double m_gamma = 0.0;
+    double m_hue = 0.0;
+    double m_sharpen = 0.0;
+    bool m_deband = false;
+    double m_grain = 0.0;
+    int m_cropLeft = 0;
+    int m_cropRight = 0;
+    int m_cropTop = 0;
+    int m_cropBottom = 0;
+    int m_rotation = 0;
+    bool m_mirrorHorizontal = false;
+    bool m_mirrorVertical = false;
+    double m_zoom = 1.0;
+    bool m_grayscale = false;
+    bool m_negative = false;
+    double m_sepia = 0.0;
+    int m_posterizeLevels = 0;
+    bool m_deinterlace = false;
+    double m_denoise = 0.0;
+    bool m_removeBanding = false;
 };
