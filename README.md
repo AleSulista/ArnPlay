@@ -1,11 +1,11 @@
-# ArnPlay — Studio Arn (0.4.0)
+# ArnPlay — Studio Arn (0.7.4)
 
 Player multimídia leve e moderno para macOS Intel, com interface Qt 6/QML e reprodução por libmpv. A identidade visual segue o padrão preto, branco e dourado do ArnFrame.
 
 Criado e desenvolvido por **Alessandro Henriques Teixeira — Studio Arn**.  
 Copyright © 2026. Distribuído sob a licença **GNU GPLv3 ou posterior**.
 
-## Primeira versão
+## Recursos da versão 0.7.4
 
 - Abre arquivos locais de áudio e vídeo
 - Reproduz, pausa e encerra a reprodução
@@ -27,6 +27,18 @@ Copyright © 2026. Distribuído sob a licença **GNU GPLv3 ou posterior**.
 - Barra desaparece 1 segundo após o mouse sair ou parar
 - Amplificação de volume até 200%, com indicação dourada acima de 100%
 - Reprodução de links on-line compatíveis, incluindo YouTube e Rumble, sem download
+- Localização automática do `yt-dlp` do Homebrew ao abrir pelo Finder ou por Aplicativos
+- Abertura automática da mídia ao usar “Abrir com ArnPlay” ou defini-lo como player padrão
+- Ícone circular próprio do ArnPlay, distinto do ArnFrame
+- Indicador de carregamento, títulos on-line na playlist e mensagens de falha mais claras
+- Download manual de vídeo MP4 ou áudio MP3, somente após confirmação de autorização
+- Ajustes de brilho, contraste, saturação, gama e rotação
+- Graves, agudos, normalização e sincronização de áudio
+- Recursos organizados na barra de menus nativa do macOS
+- Tela inicial limpa, abertura de mídia na barra de controles e menu pelo botão direito
+- Visualizador musical sobreposto à capa, com 48, 64 ou 96 barras finas e separadas
+- Barra superior e controles ocultados juntos após 1 segundo sem atividade
+- Seleção ampliada para MTS/M2TS, AVI e demais formatos reconhecidos pelo libmpv/FFmpeg
 
 ## Ambiente inicial
 
@@ -51,14 +63,28 @@ cmake --build build
 open build/ArnPlay.app
 ```
 
+## Instalação do DMG para macOS Intel
+
+Esta compilação foi validada em um MacBook Pro Intel com macOS Sequoia 15.7.3. Antes de abrir o aplicativo distribuído no DMG, instale as dependências:
+
+```bash
+brew install qt mpv yt-dlp
+```
+
+Abra `ArnPlay-0.7.4-Intel.dmg` e arraste o ArnPlay para a pasta Aplicativos. O DMG atual não inclui as bibliotecas do Homebrew. Como o aplicativo ainda não possui assinatura Apple Developer ID nem notarização, o macOS poderá solicitar confirmação na primeira abertura.
+
 Se o CMake não localizar a libmpv, confirme que `pkg-config --modversion mpv` retorna uma versão instalada.
+
+## Projeto e direitos
+
+ArnPlay foi criado, dirigido e desenvolvido por **Alessandro Henriques Teixeira — Studio Arn**. O código original é distribuído sob a GNU GPLv3 ou posterior. Qt, libmpv, FFmpeg e yt-dlp pertencem aos seus respectivos projetos e permanecem sujeitos às próprias licenças.
+
+Consulte [AUTHORS.md](AUTHORS.md), [LICENSE](LICENSE) e [CHANGELOG.md](CHANGELOG.md).
 
 ## Próximas etapas
 
-1. Validar a reprodução no Mac Intel de desenvolvimento.
-2. Criar a logo circular definitiva e o ícone `.icns`.
-3. Adicionar playlist, arrastar e soltar, seleção de áudio e legendas.
-4. Preparar empacotamento independente em `.app` e `.dmg`.
-5. Adicionar login seguro pelo navegador para recursos que realmente exijam autenticação.
+1. Produzir um DMG autossuficiente, assinado e notarizado.
+2. Expandir a biblioteca e o gerenciamento de playlists.
+3. Continuar aprimorando controles de imagem e áudio.
 
 Downloads de conteúdo on-line serão habilitados somente quando autorizados pela plataforma e pelo titular.

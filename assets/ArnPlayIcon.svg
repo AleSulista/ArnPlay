@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0" stop-color="#242424"/>
+      <stop offset="0.62" stop-color="#090909"/>
+      <stop offset="1" stop-color="#000000"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0a6"/>
+      <stop offset="0.28" stop-color="#e5bd55"/>
+      <stop offset="0.64" stop-color="#a87313"/>
+      <stop offset="1" stop-color="#f2cf6b"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+  <rect x="38" y="38" width="948" height="948" rx="220" fill="url(#bg)" stroke="#302815" stroke-width="7"/>
+  <circle cx="512" cy="488" r="342" fill="none" stroke="#9b6a12" stroke-width="42" opacity="0.42" filter="url(#shadow)"/>
+  <circle cx="512" cy="488" r="337" fill="#050505" stroke="url(#gold)" stroke-width="27"/>
+  <circle cx="512" cy="488" r="294" fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="5"/>
+  <path d="M326 650 L470 310 L554 310 L704 650 L614 650 L570 545 L450 545 L408 650 Z M478 474 L542 474 L510 394 Z" fill="#f7f7f7"/>
+  <path d="M535 423 L535 589 L674 506 Z" fill="url(#gold)" stroke="#ffe291" stroke-width="6" stroke-linejoin="round"/>
+  <g fill="url(#gold)">
+    <rect x="354" y="762" width="20" height="55" rx="10"/>
+    <rect x="391" y="738" width="20" height="79" rx="10"/>
+    <rect x="428" y="752" width="20" height="65" rx="10"/>
+    <rect x="465" y="720" width="20" height="97" rx="10"/>
+    <rect x="502" y="744" width="20" height="73" rx="10"/>
+    <rect x="539" y="711" width="20" height="106" rx="10"/>
+    <rect x="576" y="742" width="20" height="75" rx="10"/>
+    <rect x="613" y="730" width="20" height="87" rx="10"/>
+    <rect x="650" y="759" width="20" height="58" rx="10"/>
+  </g>
+</svg>
+

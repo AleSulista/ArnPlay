@@ -17,6 +17,8 @@ Rectangle {
     signal fullscreenRequested()
     signal playlistRequested()
     signal subtitleRequested()
+    signal openMediaRequested()
+    signal openUrlRequested()
 
     implicitHeight: 96
     radius: 13
@@ -53,6 +55,8 @@ Rectangle {
             spacing: 6
             Label { text: clock(player.position) + " / " + clock(player.duration); color: textMuted; Layout.preferredWidth: 112 }
             Item { Layout.fillWidth: true }
+            RoundButton { text: "+"; onClicked: openMediaRequested(); ToolTip.visible: hovered; ToolTip.text: "Abrir mídia" }
+            RoundButton { text: "URL"; onClicked: openUrlRequested(); ToolTip.visible: hovered; ToolTip.text: "Abrir URL" }
             RoundButton { text: "◀│"; onClicked: previousRequested(); ToolTip.visible: hovered; ToolTip.text: "Anterior" }
             RoundButton { text: "−10"; onClicked: player.seek(-10); ToolTip.visible: hovered; ToolTip.text: "Retroceder 10 segundos" }
             RoundButton { text: player.playing ? "Ⅱ" : "▶"; highlighted: true; onClicked: player.togglePause(); ToolTip.visible: hovered; ToolTip.text: player.playing ? "Pausar" : "Reproduzir" }

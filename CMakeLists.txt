@@ -3,13 +3,13 @@
 
 cmake_minimum_required(VERSION 3.21)
 
-project(ArnPlay VERSION 0.4.0 LANGUAGES CXX)
+project(ArnPlay VERSION 0.7.4 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Quick QuickControls2)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Network Quick QuickControls2)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(MPV REQUIRED IMPORTED_TARGET mpv)
 
@@ -33,6 +33,10 @@ qt_add_executable(ArnPlay
     src/main.cpp
     src/MpvItem.cpp
     src/MpvItem.h
+    src/MediaDownloader.cpp
+    src/MediaDownloader.h
+    src/AppController.cpp
+    src/AppController.h
     ${ARNPLAY_ICON}
 )
 
@@ -51,6 +55,7 @@ qt_add_qml_module(ArnPlay
 target_link_libraries(ArnPlay PRIVATE
     Qt6::Core
     Qt6::Gui
+    Qt6::Network
     Qt6::Quick
     Qt6::QuickControls2
     PkgConfig::MPV
@@ -63,6 +68,7 @@ set_target_properties(ArnPlay PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER "br.com.studioarn.arnplay"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
     MACOSX_BUNDLE_BUNDLE_VERSION "1"
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Info.plist.in"
 )
 
 install(TARGETS ArnPlay
