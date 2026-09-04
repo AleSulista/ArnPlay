@@ -234,7 +234,7 @@ void MpvItem::applyVideoFilters()
 
     int64_t rotate = m_rotation;
     mpv_set_property(m_mpv, "video-rotate", MPV_FORMAT_INT64, &rotate);
-    const double panscan = qBound(0.0, (m_zoom - 1.0) / 2.0, 1.0);
+    double panscan = qBound(0.0, (m_zoom - 1.0) / 2.0, 1.0);
     mpv_set_property(m_mpv, "panscan", MPV_FORMAT_DOUBLE, &panscan);
     int deinterlace = m_deinterlace;
     mpv_set_property(m_mpv, "deinterlace", MPV_FORMAT_FLAG, &deinterlace);
