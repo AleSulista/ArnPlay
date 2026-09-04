@@ -1,5 +1,15 @@
 # Histórico de versões
 
+## ArnPlay 0.7.4 corrigido — 4 de setembro de 2026
+
+- Corrigido o ciclo que fazia os controles piscarem com o cursor parado.
+- Efeitos de vídeo agora são aplicados ao vivo pelo libmpv.
+- Novo painel translúcido com abas Básico, Recortar, Geometria, Cor e Outros.
+- Adicionados nitidez, tonalidade, corte, espelhamento, zoom, preto e branco,
+  negativo, sépia, posterização, desentrelaçamento, redução de ruído,
+  remoção de bandas e granulação.
+- Corrigida de 0.7.1 para 0.7.4 a versão mostrada na janela Sobre.
+
 ## ArnPlay 0.7.4 — 3 de setembro de 2026
 
 Primeira versão pública completa para macOS Intel x86_64, testada em um MacBook Pro Intel com macOS Sequoia 15.7.3.
@@ -28,4 +38,3 @@ Primeira versão pública completa para macOS Intel x86_64, testada em um MacBoo
 ### Créditos e licença
 
 Criação, direção do projeto e desenvolvimento por **Alessandro Henriques Teixeira — Studio Arn**. Código distribuído sob GNU GPLv3 ou posterior.
-
