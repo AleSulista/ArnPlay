@@ -7,14 +7,11 @@ Copyright © 2026. Distribuído sob a licença **GNU GPLv3 ou posterior**.
 
 ## Download
 
-[Baixar ArnPlay 0.7.4 para macOS Intel](https://github.com/AleSulista/ArnPlay/raw/main/downloads/ArnPlay-0.7.4-Intel.dmg)
+[Baixar ArnPlay 0.7.4 corrigido para macOS Intel](https://github.com/AleSulista/ArnPlay/releases/download/v0.7.4-corrigido/ArnPlay-0.7.4-Intel.dmg)
 
-- Arquivo: `ArnPlay-0.7.4-Intel.dmg`
-- SHA-256: `6c7419ad2ec6e8eec29aa1a9c8bd2c92f023f8fa122995a0455c6c461a335d5d`
-- Requer macOS 12 ou posterior em Mac Intel x86_64.
-- Requer Qt 6, libmpv e yt-dlp instalados pelo Homebrew.
+O DMG é compilado automaticamente em um executor macOS Intel a partir deste código-fonte.
 
-## Recursos da versão 0.7.4
+## Primeira versão
 
 - Abre arquivos locais de áudio e vídeo
 - Reproduz, pausa e encerra a reprodução
@@ -41,12 +38,15 @@ Copyright © 2026. Distribuído sob a licença **GNU GPLv3 ou posterior**.
 - Ícone circular próprio do ArnPlay, distinto do ArnFrame
 - Indicador de carregamento, títulos on-line na playlist e mensagens de falha mais claras
 - Download manual de vídeo MP4 ou áudio MP3, somente após confirmação de autorização
-- Ajustes de brilho, contraste, saturação, gama e rotação
+- Painel translúcido de efeitos de vídeo inspirado no VLC, com cinco abas
+- Ajustes ao vivo de brilho, contraste, saturação, gama, tonalidade e nitidez
+- Recorte manual, rotação, espelhamento, zoom, preto e branco, negativo e sépia
+- Posterização, desentrelaçamento, redução de ruído, remoção de bandas e granulação
 - Graves, agudos, normalização e sincronização de áudio
 - Recursos organizados na barra de menus nativa do macOS
 - Tela inicial limpa, abertura de mídia na barra de controles e menu pelo botão direito
 - Visualizador musical sobreposto à capa, com 48, 64 ou 96 barras finas e separadas
-- Barra superior e controles ocultados juntos após 1 segundo sem atividade
+- Barra superior e controles ocultados juntos após 1 segundo sem movimento real do cursor, sem piscar
 - Seleção ampliada para MTS/M2TS, AVI e demais formatos reconhecidos pelo libmpv/FFmpeg
 
 ## Ambiente inicial
@@ -72,28 +72,24 @@ cmake --build build
 open build/ArnPlay.app
 ```
 
-## Instalação do DMG para macOS Intel
+## Criar o aplicativo e o DMG no macOS Intel
 
-Esta compilação foi validada em um MacBook Pro Intel com macOS Sequoia 15.7.3. Antes de abrir o aplicativo distribuído no DMG, instale as dependências:
+Depois de testar a compilação normal, gere o aplicativo independente e o instalador com:
 
 ```bash
-brew install qt mpv yt-dlp
+cd ~/Documents/ArnPlay-0.7.4
+chmod +x scripts/package-macos.sh
+./scripts/package-macos.sh
 ```
 
-Abra `ArnPlay-0.7.4-Intel.dmg` e arraste o ArnPlay para a pasta Aplicativos. O DMG atual não inclui as bibliotecas do Homebrew. Como o aplicativo ainda não possui assinatura Apple Developer ID nem notarização, o macOS poderá solicitar confirmação na primeira abertura.
+O instalador será criado em `dist/ArnPlay-0.7.4-Intel.dmg`. Ele inclui o Qt, a libmpv e as dependências de reprodução encontradas no Homebrew. O pacote recebe uma assinatura local ad hoc para teste; distribuição pública sem o aviso do Gatekeeper exige certificado Apple Developer ID e notarização pela Apple.
 
 Se o CMake não localizar a libmpv, confirme que `pkg-config --modversion mpv` retorna uma versão instalada.
 
-## Projeto e direitos
+## Validação recomendada
 
-ArnPlay foi criado, dirigido e desenvolvido por **Alessandro Henriques Teixeira — Studio Arn**. O código original é distribuído sob a GNU GPLv3 ou posterior. Qt, libmpv, FFmpeg e yt-dlp pertencem aos seus respectivos projetos e permanecem sujeitos às próprias licenças.
-
-Consulte [AUTHORS.md](AUTHORS.md), [LICENSE](LICENSE) e [CHANGELOG.md](CHANGELOG.md).
-
-## Próximas etapas
-
-1. Produzir um DMG autossuficiente, assinado e notarizado.
-2. Expandir a biblioteca e o gerenciamento de playlists.
-3. Continuar aprimorando controles de imagem e áudio.
+1. Confirmar a ocultação dos controles com o cursor parado sobre diferentes áreas do vídeo.
+2. Testar cada aba de efeitos com um vídeo local no Mac Intel.
+3. Validar o aplicativo independente e o DMG antes da publicação.
 
 Downloads de conteúdo on-line serão habilitados somente quando autorizados pela plataforma e pelo titular.
