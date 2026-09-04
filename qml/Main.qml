@@ -25,6 +25,8 @@ ApplicationWindow {
     property int currentMediaIndex: -1
     property bool playlistVisible: false
     property bool controlsVisible: true
+    property real lastPointerX: -10000
+    property real lastPointerY: -10000
     property url downloadFolder: StandardPaths.writableLocation(StandardPaths.DownloadLocation)
 
     ListModel { id: playlistModel }
@@ -85,6 +87,47 @@ ApplicationWindow {
     function revealControls() {
         controlsVisible = true
         controlsTimer.restart()
+    }
+
+    function pointerMoved(x, y) {
+        if (Math.abs(x - lastPointerX) < 2 && Math.abs(y - lastPointerY) < 2)
+            return
+        lastPointerX = x
+        lastPointerY = y
+        revealControls()
+    }
+
+    function applyBasicVideo() {
+        player.setVideoBasic(brightnessSlider.value, contrastSlider.value,
+                             saturationSlider.value, gammaSlider.value,
+                             hueSlider.value, sharpnessSlider.value,
+                             debandCheck.checked, grainSlider.value)
+    }
+    function applyCropVideo() { player.setVideoCrop(cropLeft.value, cropRight.value, cropTop.value, cropBottom.value) }
+    function applyGeometryVideo() {
+        player.setVideoGeometry(rotationBox.currentIndex * 90, mirrorHorizontal.checked,
+                                mirrorVertical.checked, zoomSlider.value)
+    }
+    function applyColorVideo() {
+        player.setVideoColor(grayscaleCheck.checked, negativeCheck.checked,
+                             sepiaSlider.value, posterizeSpin.value)
+    }
+    function applyOtherVideo() {
+        player.setVideoOther(deinterlaceCheck.checked, denoiseSlider.value,
+                             removeBandingCheck.checked)
+    }
+    function resetVideoUi() {
+        brightnessSlider.value = 0; contrastSlider.value = 0; saturationSlider.value = 0
+        gammaSlider.value = 0; hueSlider.value = 0; sharpnessSlider.value = 0
+        debandCheck.checked = false; grainSlider.value = 0
+        cropLeft.value = 0; cropRight.value = 0; cropTop.value = 0; cropBottom.value = 0
+        rotationBox.currentIndex = 0; mirrorHorizontal.checked = false
+        mirrorVertical.checked = false; zoomSlider.value = 1
+        grayscaleCheck.checked = false; negativeCheck.checked = false
+        sepiaSlider.value = 0; posterizeSpin.value = 0
+        deinterlaceCheck.checked = false; denoiseSlider.value = 0
+        removeBandingCheck.checked = false
+        player.resetVideoAdjustments()
     }
 
     Timer {
@@ -197,7 +240,7 @@ ApplicationWindow {
         Menu {
             title: "Vídeo"
             Action { text: "Ajustes de imagem…"; onTriggered: videoAdjustDialog.open() }
-            Action { text: "Restaurar ajustes de vídeo"; onTriggered: { player.resetVideoAdjustments(); brightnessSlider.value = 0; contrastSlider.value = 0; saturationSlider.value = 0; gammaSlider.value = 0; rotationBox.currentIndex = 0 } }
+            Action { text: "Restaurar ajustes de vídeo"; onTriggered: resetVideoUi() }
         }
         Menu {
             title: "Áudio"
@@ -227,10 +270,6 @@ ApplicationWindow {
             color: window.panel
             Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
             Behavior on chromeHeight { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-            HoverHandler {
-                onHoveredChanged: if (hovered) window.revealControls()
-                onPointChanged: window.revealControls()
-            }
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 20
@@ -300,11 +339,9 @@ ApplicationWindow {
                     MenuItem { text: "Melhorias de áudio…"; onTriggered: audioAdjustDialog.open() }
                     MenuItem { text: "Tela cheia"; onTriggered: toggleFullscreen() }
                 }
-                MouseArea {
-                    anchors.fill: parent
-                    acceptedButtons: Qt.NoButton
-                    hoverEnabled: true
-                    onPositionChanged: window.revealControls()
+                HoverHandler {
+                    id: playbackHover
+                    onPointChanged: window.pointerMoved(point.scenePosition.x, point.scenePosition.y)
                 }
                 DropArea {
                     anchors.fill: parent
@@ -339,15 +376,6 @@ ApplicationWindow {
                     visible: opacity > 0.01
                     z: 20
                     Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-                    HoverHandler {
-                        onHoveredChanged: {
-                            if (hovered)
-                                window.revealControls()
-                            else
-                                controlsTimer.restart()
-                        }
-                        onPointChanged: window.revealControls()
-                    }
                     onPreviousRequested: playPrevious()
                     onNextRequested: playNext()
                     onFullscreenRequested: toggleFullscreen()
@@ -468,37 +496,93 @@ ApplicationWindow {
 
     Dialog {
         id: videoAdjustDialog
-        title: "Ajustes de vídeo"
-        width: Math.min(520, window.width - 40)
-        standardButtons: Dialog.Close
+        title: "Efeitos de vídeo"
+        modal: false
+        width: Math.min(720, window.width - 32)
+        height: Math.min(520, window.height - 80)
+        anchors.centerIn: parent
+        standardButtons: Dialog.NoButton
+        background: Rectangle { radius: 12; color: "#dc171717"; border.color: "#806f5628"; border.width: 1 }
         contentItem: ColumnLayout {
-            Repeater {
-                model: [
-                    { label: "Brilho", slider: brightnessSlider },
-                    { label: "Contraste", slider: contrastSlider },
-                    { label: "Saturação", slider: saturationSlider },
-                    { label: "Gama", slider: gammaSlider }
-                ]
-                delegate: RowLayout {
-                    required property var modelData
-                    Layout.fillWidth: true
-                    Label { text: modelData.label; color: window.textPrimary; Layout.preferredWidth: 90 }
-                    Slider { id: generatedSlider; Layout.fillWidth: true; from: -100; to: 100; value: modelData.slider.value; onMoved: modelData.slider.value = value }
-                    Label { text: Math.round(modelData.slider.value); color: window.textMuted; Layout.preferredWidth: 35 }
+            spacing: 10
+            TabBar {
+                id: videoTabs; Layout.fillWidth: true
+                TabButton { text: "Básico" }
+                TabButton { text: "Recortar" }
+                TabButton { text: "Geometria" }
+                TabButton { text: "Cor" }
+                TabButton { text: "Outros" }
+            }
+            StackLayout {
+                currentIndex: videoTabs.currentIndex; Layout.fillWidth: true; Layout.fillHeight: true
+                ScrollView {
+                    contentWidth: availableWidth
+                    ColumnLayout {
+                        width: parent.width; spacing: 6
+                        Label { text: "Ajuste de imagem"; color: window.gold; font.bold: true }
+                        Label { text: "Brilho  " + Math.round(brightnessSlider.value); color: window.textPrimary }
+                        Slider { id: brightnessSlider; Layout.fillWidth: true; from: -100; to: 100; onMoved: window.applyBasicVideo() }
+                        Label { text: "Contraste  " + Math.round(contrastSlider.value); color: window.textPrimary }
+                        Slider { id: contrastSlider; Layout.fillWidth: true; from: -100; to: 100; onMoved: window.applyBasicVideo() }
+                        Label { text: "Saturação  " + Math.round(saturationSlider.value); color: window.textPrimary }
+                        Slider { id: saturationSlider; Layout.fillWidth: true; from: -100; to: 100; onMoved: window.applyBasicVideo() }
+                        Label { text: "Gama  " + Math.round(gammaSlider.value); color: window.textPrimary }
+                        Slider { id: gammaSlider; Layout.fillWidth: true; from: -100; to: 100; onMoved: window.applyBasicVideo() }
+                        Label { text: "Tonalidade  " + Math.round(hueSlider.value); color: window.textPrimary }
+                        Slider { id: hueSlider; Layout.fillWidth: true; from: -100; to: 100; onMoved: window.applyBasicVideo() }
+                        Label { text: "Nitidez  " + sharpnessSlider.value.toFixed(1); color: window.textPrimary }
+                        Slider { id: sharpnessSlider; Layout.fillWidth: true; from: 0; to: 2; stepSize: 0.1; onMoved: window.applyBasicVideo() }
+                        CheckBox { id: debandCheck; text: "Remoção de bandas"; onToggled: window.applyBasicVideo() }
+                        Label { text: "Granulação do filme  " + Math.round(grainSlider.value); color: window.textPrimary }
+                        Slider { id: grainSlider; Layout.fillWidth: true; from: 0; to: 30; onMoved: window.applyBasicVideo() }
+                    }
+                }
+                ColumnLayout {
+                    Label { text: "Recorte manual em pixels"; color: window.gold; font.bold: true }
+                    GridLayout { columns: 2
+                        Label { text: "Esquerda"; color: window.textPrimary }
+                        SpinBox { id: cropLeft; from: 0; to: 4000; editable: true; onValueModified: window.applyCropVideo() }
+                        Label { text: "Direita"; color: window.textPrimary }
+                        SpinBox { id: cropRight; from: 0; to: 4000; editable: true; onValueModified: window.applyCropVideo() }
+                        Label { text: "Superior"; color: window.textPrimary }
+                        SpinBox { id: cropTop; from: 0; to: 4000; editable: true; onValueModified: window.applyCropVideo() }
+                        Label { text: "Inferior"; color: window.textPrimary }
+                        SpinBox { id: cropBottom; from: 0; to: 4000; editable: true; onValueModified: window.applyCropVideo() }
+                    }
+                    Label { text: "Aplicação imediata, sem alterar o arquivo original."; color: window.textMuted }
+                    Item { Layout.fillHeight: true }
+                }
+                ColumnLayout {
+                    Label { text: "Transformação"; color: window.gold; font.bold: true }
+                    RowLayout { Label { text: "Rotação"; color: window.textPrimary }; ComboBox { id: rotationBox; model: ["0°", "90°", "180°", "270°"]; onActivated: window.applyGeometryVideo() } }
+                    CheckBox { id: mirrorHorizontal; text: "Espelhar horizontalmente"; onToggled: window.applyGeometryVideo() }
+                    CheckBox { id: mirrorVertical; text: "Espelhar verticalmente"; onToggled: window.applyGeometryVideo() }
+                    Label { text: "Zoom  " + zoomSlider.value.toFixed(2) + "×"; color: window.textPrimary }
+                    Slider { id: zoomSlider; Layout.fillWidth: true; from: 0.5; to: 3; stepSize: 0.05; value: 1; onMoved: window.applyGeometryVideo() }
+                    Item { Layout.fillHeight: true }
+                }
+                ColumnLayout {
+                    Label { text: "Tratamento de cor"; color: window.gold; font.bold: true }
+                    CheckBox { id: grayscaleCheck; text: "Preto e branco"; onToggled: window.applyColorVideo() }
+                    CheckBox { id: negativeCheck; text: "Negativo"; onToggled: window.applyColorVideo() }
+                    Label { text: "Sépia  " + Math.round(sepiaSlider.value * 100) + "%"; color: window.textPrimary }
+                    Slider { id: sepiaSlider; Layout.fillWidth: true; from: 0; to: 1; stepSize: 0.01; onMoved: window.applyColorVideo() }
+                    RowLayout { Label { text: "Posterização (níveis)"; color: window.textPrimary }; SpinBox { id: posterizeSpin; from: 0; to: 64; editable: true; onValueModified: window.applyColorVideo() } }
+                    Item { Layout.fillHeight: true }
+                }
+                ColumnLayout {
+                    Label { text: "Processamento"; color: window.gold; font.bold: true }
+                    CheckBox { id: deinterlaceCheck; text: "Desentrelaçamento"; onToggled: window.applyOtherVideo() }
+                    CheckBox { id: removeBandingCheck; text: "Remoção de bandas reforçada"; onToggled: window.applyOtherVideo() }
+                    Label { text: "Redução de ruído  " + denoiseSlider.value.toFixed(1); color: window.textPrimary }
+                    Slider { id: denoiseSlider; Layout.fillWidth: true; from: 0; to: 10; stepSize: 0.1; onMoved: window.applyOtherVideo() }
+                    Item { Layout.fillHeight: true }
                 }
             }
-            Item { id: brightnessSlider; property real value: 0 }
-            Item { id: contrastSlider; property real value: 0 }
-            Item { id: saturationSlider; property real value: 0 }
-            Item { id: gammaSlider; property real value: 0 }
             RowLayout {
-                Label { text: "Rotação"; color: window.textPrimary; Layout.preferredWidth: 90 }
-                ComboBox { id: rotationBox; model: ["0°", "90°", "180°", "270°"] }
                 Item { Layout.fillWidth: true }
-                Button {
-                    text: "Aplicar"
-                    onClicked: player.setVideoAdjustments(Math.round(brightnessSlider.value), Math.round(contrastSlider.value), Math.round(saturationSlider.value), Math.round(gammaSlider.value), rotationBox.currentIndex * 90)
-                }
+                Button { text: "Restaurar padrões"; onClicked: window.resetVideoUi() }
+                Button { text: "Fechar"; onClicked: videoAdjustDialog.close() }
             }
         }
     }
@@ -530,7 +614,7 @@ ApplicationWindow {
         standardButtons: Dialog.Ok
         Label {
             width: 420
-            text: "ArnPlay 0.7.1 — Studio Arn\n\nPlayer multimídia para macOS Intel, criado e desenvolvido por Alessandro Henriques Teixeira.\n\nQt 6/QML + libmpv\nLicença GNU GPLv3 ou posterior."
+            text: "ArnPlay 0.7.4 — Studio Arn\n\nPlayer multimídia para macOS Intel, criado e desenvolvido por Alessandro Henriques Teixeira.\n\nQt 6/QML + libmpv\nLicença GNU GPLv3 ou posterior."
             color: window.textPrimary
             wrapMode: Text.WordWrap
         }
