@@ -1,0 +1,34 @@
+name: Compilar DMG Intel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15-intel
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar dependências
+        run: brew install qt cmake ninja mpv yt-dlp pkg-config
+      - name: Compilar aplicativo e DMG
+        run: |
+          chmod +x scripts/package-macos.sh
+          ./scripts/package-macos.sh
+      - name: Calcular checksum
+        run: shasum -a 256 dist/ArnPlay-0.7.4-Intel.dmg > dist/SHA256SUMS.txt
+      - name: Publicar versão corrigida
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.7.4-corrigido >/dev/null 2>&1; then
+            gh release upload v0.7.4-corrigido dist/ArnPlay-0.7.4-Intel.dmg dist/SHA256SUMS.txt --clobber
+          else
+            gh release create v0.7.4-corrigido dist/ArnPlay-0.7.4-Intel.dmg dist/SHA256SUMS.txt \
+              --title "ArnPlay 0.7.4 corrigido — macOS Intel" \
+              --notes "Corrige a ocultação dos controles, ativa os efeitos de vídeo em tempo real e atualiza a versão exibida no Sobre."
+          fi
