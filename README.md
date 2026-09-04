@@ -5,6 +5,15 @@ Player multimídia leve e moderno para macOS Intel, com interface Qt 6/QML e rep
 Criado e desenvolvido por **Alessandro Henriques Teixeira — Studio Arn**.  
 Copyright © 2026. Distribuído sob a licença **GNU GPLv3 ou posterior**.
 
+## Download
+
+[Baixar ArnPlay 0.7.4 para macOS Intel](https://github.com/AleSulista/ArnPlay/raw/main/downloads/ArnPlay-0.7.4-Intel.dmg)
+
+- Arquivo: `ArnPlay-0.7.4-Intel.dmg`
+- SHA-256: `6c7419ad2ec6e8eec29aa1a9c8bd2c92f023f8fa122995a0455c6c461a335d5d`
+- Requer macOS 12 ou posterior em Mac Intel x86_64.
+- Requer Qt 6, libmpv e yt-dlp instalados pelo Homebrew.
+
 ## Recursos da versão 0.7.4
 
 - Abre arquivos locais de áudio e vídeo
