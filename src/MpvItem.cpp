@@ -11,6 +11,7 @@
 #include <QQuickWindow>
 #include <QStringList>
 #include <QFileInfo>
+#include <QtGlobal>
 
 #include <clocale>
 
@@ -165,21 +166,123 @@ void MpvItem::setPlaybackSpeed(double speed)
 {
     if (m_mpv) mpv_set_property_async(m_mpv, 0, "speed", MPV_FORMAT_DOUBLE, &speed);
 }
-void MpvItem::setVideoAdjustments(int brightness, int contrast, int saturation, int gamma, int rotation)
+void MpvItem::setVideoBasic(double brightness, double contrast, double saturation,
+                            double gamma, double hue, double sharpen,
+                            bool deband, double grain)
+{
+    m_brightness = brightness;
+    m_contrast = contrast;
+    m_saturation = saturation;
+    m_gamma = gamma;
+    m_hue = hue;
+    m_sharpen = sharpen;
+    m_deband = deband;
+    m_grain = grain;
+    applyVideoFilters();
+}
+
+void MpvItem::setVideoCrop(int left, int right, int top, int bottom)
+{
+    m_cropLeft = qMax(0, left); m_cropRight = qMax(0, right);
+    m_cropTop = qMax(0, top); m_cropBottom = qMax(0, bottom);
+    applyVideoFilters();
+}
+
+void MpvItem::setVideoGeometry(int rotation, bool mirrorHorizontal,
+                               bool mirrorVertical, double zoom)
+{
+    m_rotation = ((rotation % 360) + 360) % 360;
+    m_mirrorHorizontal = mirrorHorizontal;
+    m_mirrorVertical = mirrorVertical;
+    m_zoom = qBound(0.5, zoom, 3.0);
+    applyVideoFilters();
+}
+
+void MpvItem::setVideoColor(bool grayscale, bool negative, double sepia,
+                            int posterizeLevels)
+{
+    m_grayscale = grayscale;
+    m_negative = negative;
+    m_sepia = qBound(0.0, sepia, 1.0);
+    m_posterizeLevels = qBound(0, posterizeLevels, 64);
+    applyVideoFilters();
+}
+
+void MpvItem::setVideoOther(bool deinterlace, double denoise, bool removeBanding)
+{
+    m_deinterlace = deinterlace;
+    m_denoise = qBound(0.0, denoise, 10.0);
+    m_removeBanding = removeBanding;
+    applyVideoFilters();
+}
+
+void MpvItem::applyVideoFilters()
 {
     if (!m_mpv) return;
-    int64_t brightnessValue = brightness;
-    int64_t contrastValue = contrast;
-    int64_t saturationValue = saturation;
-    int64_t gammaValue = gamma;
-    mpv_set_property(m_mpv, "brightness", MPV_FORMAT_INT64, &brightnessValue);
-    mpv_set_property(m_mpv, "contrast", MPV_FORMAT_INT64, &contrastValue);
-    mpv_set_property(m_mpv, "saturation", MPV_FORMAT_INT64, &saturationValue);
-    mpv_set_property(m_mpv, "gamma", MPV_FORMAT_INT64, &gammaValue);
-    int64_t rotate = rotation;
+
+    // Basic colour controls use mpv's OpenGL video equalizer. Unlike the old
+    // implementation, values are sent continuously while a slider is moved.
+    auto setEqualizer = [this](const char *name, double value) {
+        int64_t rounded = qRound64(value);
+        mpv_set_property(m_mpv, name, MPV_FORMAT_INT64, &rounded);
+    };
+    setEqualizer("brightness", m_brightness);
+    setEqualizer("contrast", m_contrast);
+    setEqualizer("saturation", m_saturation);
+    setEqualizer("gamma", m_gamma);
+    setEqualizer("hue", m_hue);
+
+    int64_t rotate = m_rotation;
     mpv_set_property(m_mpv, "video-rotate", MPV_FORMAT_INT64, &rotate);
+    const double panscan = qBound(0.0, (m_zoom - 1.0) / 2.0, 1.0);
+    mpv_set_property(m_mpv, "panscan", MPV_FORMAT_DOUBLE, &panscan);
+    int deinterlace = m_deinterlace;
+    mpv_set_property(m_mpv, "deinterlace", MPV_FORMAT_FLAG, &deinterlace);
+    int deband = m_deband || m_removeBanding;
+    mpv_set_property(m_mpv, "deband", MPV_FORMAT_FLAG, &deband);
+
+    QStringList filters;
+    if (m_cropLeft || m_cropRight || m_cropTop || m_cropBottom) {
+        filters << QStringLiteral("lavfi=[crop=iw-%1:ih-%2:%3:%4]")
+                       .arg(m_cropLeft + m_cropRight).arg(m_cropTop + m_cropBottom)
+                       .arg(m_cropLeft).arg(m_cropTop);
+    }
+    if (m_mirrorHorizontal) filters << QStringLiteral("lavfi=[hflip]");
+    if (m_mirrorVertical) filters << QStringLiteral("lavfi=[vflip]");
+    if (m_sharpen > 0.01)
+        filters << QStringLiteral("lavfi=[unsharp=5:5:%1:5:5:0]").arg(m_sharpen, 0, 'f', 2);
+    if (m_grain > 0.01)
+        filters << QStringLiteral("lavfi=[noise=alls=%1:allf=t]").arg(m_grain, 0, 'f', 1);
+    if (m_denoise > 0.01)
+        filters << QStringLiteral("lavfi=[hqdn3d=%1:%1:%2:%2]")
+                       .arg(m_denoise, 0, 'f', 1).arg(m_denoise * 1.5, 0, 'f', 1);
+    if (m_grayscale) filters << QStringLiteral("lavfi=[hue=s=0]");
+    if (m_negative) filters << QStringLiteral("lavfi=[negate]");
+    if (m_sepia > 0.01) {
+        const double s = m_sepia;
+        filters << QStringLiteral("lavfi=[colorchannelmixer=%1:%2:%3:0:%4:%5:%6:0:%7:%8:%9]")
+                       .arg(1.0 - 0.607*s, 0, 'f', 3).arg(0.769*s, 0, 'f', 3).arg(0.189*s, 0, 'f', 3)
+                       .arg(0.349*s, 0, 'f', 3).arg(1.0 - 0.314*s, 0, 'f', 3).arg(0.168*s, 0, 'f', 3)
+                       .arg(0.272*s, 0, 'f', 3).arg(0.534*s, 0, 'f', 3).arg(1.0 - 0.869*s, 0, 'f', 3);
+    }
+    if (m_posterizeLevels >= 2)
+        filters << QStringLiteral("lavfi=[lutrgb=r='floor(val/%1)*%1':g='floor(val/%1)*%1':b='floor(val/%1)*%1']")
+                       .arg(qMax(1, 256 / m_posterizeLevels));
+
+    const QByteArray vf = filters.join(',').toUtf8();
+    mpv_set_property_string(m_mpv, "vf", vf.constData());
 }
-void MpvItem::resetVideoAdjustments() { setVideoAdjustments(0, 0, 0, 0, 0); }
+
+void MpvItem::resetVideoAdjustments()
+{
+    m_brightness = m_contrast = m_saturation = m_gamma = m_hue = 0.0;
+    m_sharpen = m_grain = 0.0; m_deband = false;
+    m_cropLeft = m_cropRight = m_cropTop = m_cropBottom = 0;
+    m_rotation = 0; m_mirrorHorizontal = m_mirrorVertical = false; m_zoom = 1.0;
+    m_grayscale = m_negative = false; m_sepia = 0.0; m_posterizeLevels = 0;
+    m_deinterlace = false; m_denoise = 0.0; m_removeBanding = false;
+    applyVideoFilters();
+}
 void MpvItem::setAudioAdjustments(int bass, int treble, bool normalize, double delay)
 {
     if (!m_mpv) return;
