@@ -554,7 +554,10 @@ ApplicationWindow {
                 }
                 ColumnLayout {
                     Label { text: "Transformação"; color: window.gold; font.bold: true }
-                    RowLayout { Label { text: "Rotação"; color: window.textPrimary }; ComboBox { id: rotationBox; model: ["0°", "90°", "180°", "270°"]; onActivated: window.applyGeometryVideo() } }
+                    RowLayout {
+                        Label { text: "Rotação"; color: window.textPrimary }
+                        ComboBox { id: rotationBox; model: ["0°", "90°", "180°", "270°"]; onActivated: window.applyGeometryVideo() }
+                    }
                     CheckBox { id: mirrorHorizontal; text: "Espelhar horizontalmente"; onToggled: window.applyGeometryVideo() }
                     CheckBox { id: mirrorVertical; text: "Espelhar verticalmente"; onToggled: window.applyGeometryVideo() }
                     Label { text: "Zoom  " + zoomSlider.value.toFixed(2) + "×"; color: window.textPrimary }
@@ -567,7 +570,10 @@ ApplicationWindow {
                     CheckBox { id: negativeCheck; text: "Negativo"; onToggled: window.applyColorVideo() }
                     Label { text: "Sépia  " + Math.round(sepiaSlider.value * 100) + "%"; color: window.textPrimary }
                     Slider { id: sepiaSlider; Layout.fillWidth: true; from: 0; to: 1; stepSize: 0.01; onMoved: window.applyColorVideo() }
-                    RowLayout { Label { text: "Posterização (níveis)"; color: window.textPrimary }; SpinBox { id: posterizeSpin; from: 0; to: 64; editable: true; onValueModified: window.applyColorVideo() } }
+                    RowLayout {
+                        Label { text: "Posterização (níveis)"; color: window.textPrimary }
+                        SpinBox { id: posterizeSpin; from: 0; to: 64; editable: true; onValueModified: window.applyColorVideo() }
+                    }
                     Item { Layout.fillHeight: true }
                 }
                 ColumnLayout {
