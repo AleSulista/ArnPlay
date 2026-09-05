@@ -1,15 +1,19 @@
-name: Compilar DMG Intel
+name: Compilar DMG Intel — legado 0.7.4
+
+# O ArnPlay 0.7.4 já foi publicado sob GPLv3+.
+# Durante a migração das próximas versões para um modelo não comercial,
+# este workflow fica somente manual para impedir que alterações de licença
+# recriem ou republicem automaticamente o binário legado com dependências
+# cuja modalidade de licença ainda não foi validada para a nova edição.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: arnplay-intel-dmg-main
+  group: arnplay-intel-dmg-legacy
   cancel-in-progress: true
 
 jobs:
@@ -17,15 +21,15 @@ jobs:
     runs-on: macos-15-intel
     steps:
       - uses: actions/checkout@v4
-      - name: Instalar dependências
+      - name: Instalar dependências da edição legada
         run: brew install qt cmake ninja mpv yt-dlp pkg-config
-      - name: Compilar aplicativo e DMG
+      - name: Compilar aplicativo e DMG legado
         run: |
           chmod +x scripts/package-macos.sh
           ./scripts/package-macos.sh
       - name: Calcular checksum
         run: shasum -a 256 dist/ArnPlay-0.7.4-Intel.dmg > dist/SHA256SUMS.txt
-      - name: Publicar versão corrigida
+      - name: Publicar versão legada somente por execução manual
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -34,5 +38,5 @@ jobs:
           else
             gh release create v0.7.4-corrigido dist/ArnPlay-0.7.4-Intel.dmg dist/SHA256SUMS.txt \
               --title "ArnPlay 0.7.4 corrigido — macOS Intel" \
-              --notes "Corrige a ocultação dos controles, ativa os efeitos de vídeo em tempo real e atualiza a versão exibida no Sobre."
+              --notes "Versão legada do ArnPlay publicada sob GNU GPLv3 ou posterior."
           fi
